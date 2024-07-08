@@ -13,7 +13,7 @@ services:
       - pg_data:/var/lib/postgresql/data
   
   backend:
-    image: renaissancejke/foodgram_backend
+    image: renaissancejke/foodgram_backend:latest
     env_file: .env
     volumes:
       - static:/static
@@ -22,14 +22,14 @@ services:
       - db
   
   frontend:
-    image: renaissancejke/foodgram_frontend
+    image: renaissancejke/foodgram_frontend:latest
     env_file: .env
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static
   
   gateway:
-    image: renaissancejke/foodgram_gateway
+    image: renaissancejke/foodgram_gateway:latest
     env_file: .env
     volumes:
       - static:/static

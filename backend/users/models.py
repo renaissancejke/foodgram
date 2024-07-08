@@ -1,43 +1,35 @@
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
-from foodgram.constants import NAME_MAX_LENGTH
+from users.constants import (MAX_LENGTH_EMAIL, MAX_LENGTH_FIRST_NAME,
+                             MAX_LENGTH_LAST_NAME, MAX_LENGTH_PASSWORD,
+                             MAX_LENGTH_USERNAME)
+from users.validators import username_validator
 
 
 class User(AbstractUser):
-    REQUIRED_FIELDS = [
-        'username',
-        'first_name',
-        'last_name',
-    ]
+    email = models.EmailField(max_length=MAX_LENGTH_EMAIL,
+                              verbose_name='Адрес электронной почты',
+                              unique=True)
+    username = models.CharField(max_length=MAX_LENGTH_USERNAME,
+                                unique=True,
+                                validators=[username_validator],
+                                verbose_name='Юзернейм')
+    first_name = models.CharField(max_length=MAX_LENGTH_FIRST_NAME,
+                                  verbose_name='Имя')
+    last_name = models.CharField(max_length=MAX_LENGTH_LAST_NAME,
+                                 verbose_name='Фамилия')
+    password = models.CharField(max_length=MAX_LENGTH_PASSWORD,
+                                verbose_name='Пароль')
+    avatar = models.ImageField(upload_to='users/images',
+                               verbose_name='Аватар пользователя',
+                               default=None,
+                               null=True)
+    is_blocked = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
-
-    username = models.CharField(
-        unique=True,
-        max_length=NAME_MAX_LENGTH,
-        validators=[UnicodeUsernameValidator(), ],
-        verbose_name='Никнейм пользователя',
-        help_text='Укажите никнейм пользователя'
-    )
-    first_name = models.CharField(
-        max_length=NAME_MAX_LENGTH,
-        verbose_name='Имя пользователя',
-        help_text='Укажите имя пользователя'
-    )
-    last_name = models.CharField(
-        max_length=NAME_MAX_LENGTH,
-        verbose_name='Фамилия пользователя',
-        help_text='Укажите фамилию пользователя'
-    )
-    email = models.EmailField(
-        unique=True,
-        verbose_name='E-mail пользователя',
-        help_text='Укажите e-mail пользователя'
-    )
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
 
     class Meta:
-        ordering = ('username',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
 
@@ -45,36 +37,24 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscribers(models.Model):
-    author = models.ForeignKey(
+class Subscription(models.Model):
+    subscriber = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='authors',
-        verbose_name='Автор рецептов',
-        help_text='Укажите автора рецепта'
+        verbose_name='Подписки',
+        related_name='subscriptions'
     )
-    user = models.ForeignKey(
+    subscription = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscribers',
-        verbose_name='Пользователь-подписчик',
-        help_text='Укажите пользователя-подписчика'
+        verbose_name='Подписчики',
+        related_name='subscribers'
     )
-
-    class Meta:
-        ordering = ('author',)
-        verbose_name = 'Автор - подписчик'
-        verbose_name_plural = verbose_name
-        constraints = [
-            models.UniqueConstraint(
-                fields=['author', 'user'],
-                name='unique_author_user'
-            ),
-            models.CheckConstraint(
-                check=~models.Q(author=models.F('user')),
-                name='author_and_user_different',
-            )
-        ]
 
     def __str__(self):
-        return f"{self.author} - {self.user}"
+        return f"{self.subscriber}-{self.subscription}"
+
+    class Meta:
+        verbose_name = 'Подписчик',
+        verbose_name_plural = 'Подписчики'
+        unique_together = ('subscriber', 'subscription')
