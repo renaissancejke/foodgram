@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from recipes.models import (Ingredient, IngredientRecipe, Recipe, Tag,
@@ -75,55 +76,46 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 )
         return data
 
-    def create(self, validated_data):
-        tags_id = validated_data.pop('tags')
+    def create_or_update_recipe_relations(
+        self, recipe, tags_id, ingredients_list
+    ):
         tags = Tag.objects.filter(id__in=tags_id)
-        ingredients_list = validated_data.pop('ingredients')
-        recipe = Recipe.objects.create(**validated_data)
-        for tag in tags:
-            TagRecipe.objects.create(tags=tag, recipe=recipe)
-        for ingredient in ingredients_list:
-            ingredient_instance = Ingredient.objects.get(
-                id=ingredient['id']
-            )
-            IngredientRecipe.objects.create(
-                ingredients=ingredient_instance,
+        tag_recipes = [TagRecipe(tags=tag, recipe=recipe) for tag in tags]
+        TagRecipe.objects.bulk_create(tag_recipes)
+
+        ingredient_recipes = [
+            IngredientRecipe(
+                ingredients_id=ingredient['id'],
                 amount=ingredient['amount'],
                 recipe=recipe
             )
+            for ingredient in ingredients_list
+        ]
+        IngredientRecipe.objects.bulk_create(ingredient_recipes)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        tags_id = validated_data.pop('tags')
+        ingredients_list = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        self.create_or_update_recipe_relations(
+            recipe,
+            tags_id,
+            ingredients_list
+        )
         return recipe
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
+        tags_id = validated_data.pop('tags', [])
+        ingredients_list = validated_data.pop('ingredients', [])
+        recipe = super().update(instance, validated_data)
+        self.create_or_update_recipe_relations(
+            recipe,
+            tags_id,
+            ingredients_list
         )
-        instance.image = validated_data.get('image', instance.image)
-
-        tags_id = validated_data.get('tags')
-        tags = Tag.objects.filter(id__in=tags_id)
-
-        instance.tags.clear()
-
-        for tag in tags:
-            TagRecipe.objects.create(tags=tag, recipe=instance)
-
-        ingredients_list = validated_data.get('ingredients')
-        instance.ingredients.clear()
-        for ingredient_data in ingredients_list:
-            ingredient_id = ingredient_data.get('id')
-            amount = ingredient_data.get('amount')
-            ingredient_instance = Ingredient.objects.get(id=ingredient_id)
-            IngredientRecipe.objects.create(
-                ingredients=ingredient_instance,
-                amount=amount,
-                recipe=instance
-            )
-
-        instance.save()
-        return instance
+        return recipe
 
 
 class RecipeSerializer(serializers.ModelSerializer):

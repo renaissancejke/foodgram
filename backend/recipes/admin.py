@@ -4,6 +4,7 @@ from recipes.models import (Ingredient, IngredientRecipe, Link, Recipe, Tag,
                             TagRecipe, UserFavourite, UserShoppingCart)
 
 
+@admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'author', 'favourite_count'
@@ -19,6 +20,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
     list_display = (
         'name', 'measurement_unit'
@@ -28,11 +30,31 @@ class IngredientAdmin(admin.ModelAdmin):
     )
 
 
-admin.site.register(Recipe, RecipeAdmin)
-admin.site.register(Tag)
-admin.site.register(Ingredient, IngredientAdmin)
-admin.site.register(UserFavourite)
-admin.site.register(UserShoppingCart)
-admin.site.register(Link)
-admin.site.register(TagRecipe)
-admin.site.register(IngredientRecipe)
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(UserFavourite)
+class UserFavouriteAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(UserShoppingCart)
+class UserShoppingCartAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Link)
+class LinkAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(TagRecipe)
+class TagRecipeAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(IngredientRecipe)
+class IngredientRecipeAdmin(admin.ModelAdmin):
+    pass

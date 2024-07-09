@@ -20,13 +20,13 @@ class Recipe(models.Model):
                             help_text='Введите название блюда, '
                                       f'не более {MAX_LENGTH_RECIPE} символов')
     text = models.TextField(verbose_name='Описание',
-                            help_text='''Введите описание блюда,
-                                         не более 256 символов''')
+                            help_text='Введите описание блюда, '
+                                         'не более 256 символов')
     ingredients = models.ManyToManyField('Ingredient',
                                          through='IngredientRecipe',
                                          verbose_name='Ингредиенты',
-                                         help_text='''Выберите ингредиенты
-                                                      из списка''')
+                                         help_text='Выберите ингредиенты '
+                                                      'из списка')
     image = models.ImageField(upload_to='recipes/images',
                               verbose_name='Картинка',
                               default=None)
@@ -96,7 +96,10 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        unique_together = ['name', 'measurement_unit']
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'measurement_unit'],
+                                    name='unique_ingredient')
+        ]
 
     def __str__(self):
         return self.name
@@ -123,7 +126,7 @@ class IngredientRecipe(models.Model):
         verbose_name_plural = 'Ингредиенты рецептов'
 
     def __str__(self):
-        return f"{self.ingredients}-{self.recipe}"
+        return f'{self.ingredients}-{self.recipe}'
 
 
 class TagRecipe(models.Model):
@@ -140,7 +143,7 @@ class TagRecipe(models.Model):
         verbose_name_plural = 'Теги рецептов'
 
     def __str__(self):
-        return f"{self.tags}-{self.recipe}"
+        return f'{self.tags}-{self.recipe}'
 
 
 class UserFavourite(models.Model):
@@ -158,7 +161,7 @@ class UserFavourite(models.Model):
         verbose_name_plural = 'Избранные рецепты пользователя'
 
     def __str__(self):
-        return f"{self.user}-{self.recipe}"
+        return f'{self.user}-{self.recipe}'
 
 
 class UserShoppingCart(models.Model):
@@ -176,7 +179,7 @@ class UserShoppingCart(models.Model):
         verbose_name_plural = 'Продукты в корзинах подьзователей'
 
     def __str__(self):
-        return f"{self.user}-{self.recipe}"
+        return f'{self.user}-{self.recipe}'
 
 
 class Link(models.Model):
@@ -188,4 +191,4 @@ class Link(models.Model):
         verbose_name_plural = 'Ссылки на рецепт'
 
     def __str__(self):
-        return f"{self.short_link}-{self.long_link}"
+        return f'{self.short_link}-{self.long_link}'

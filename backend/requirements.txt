@@ -10,11 +10,13 @@ coreschema==0.0.4
 cryptography==42.0.6
 defusedxml==0.8.0rc2
 Django==3.2.16
+django-filter==23.1
 django-templated-mail==1.1.1
 django_debug_toolbar==3.8.1
 djangorestframework==3.12.4
 djangorestframework-simplejwt==4.7.2
 djoser==2.1.0
+gunicorn==20.1.0
 idna==3.7
 iniconfig==2.0.0
 itypes==1.2.0
@@ -46,4 +48,3 @@ tzdata==2024.1
 uritemplate==4.1.1
 urllib3==1.26.18
 webcolors==1.11.1
-django-filter==23.1

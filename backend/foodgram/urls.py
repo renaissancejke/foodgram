@@ -7,10 +7,10 @@ from recipes.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
 from users.views import MyUserViewSet, subscribe
 
 router = routers.DefaultRouter()
-router.register(r'recipes', RecipeViewSet, basename='recipes')
-router.register(r'ingredients', IngredientViewSet)
-router.register(r'tags', TagViewSet)
-router.register(r'users', MyUserViewSet)
+router.register('recipes', RecipeViewSet, basename='recipes')
+router.register('ingredients', IngredientViewSet)
+router.register('tags', TagViewSet)
+router.register('users', MyUserViewSet)
 
 
 urlpatterns = [
