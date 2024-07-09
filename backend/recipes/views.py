@@ -59,8 +59,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def favorite(self, request, pk=None):
         if request.method == 'POST':
             return self.add_to_favorites(request, pk)
-        else:
-            return self.remove_from_favorites(request, pk)
+        return self.remove_from_favorites(request, pk)
 
     def add_to_favorites(self, request, pk=None):
         if not Recipe.objects.filter(pk=pk).exists():
@@ -72,19 +71,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         if not user.is_authenticated:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        try:
-            UserFavourite.objects.get(user=user, recipe=recipe)
-        except UserFavourite.DoesNotExist:
-            userfavourite = UserFavourite.objects.create(
-                user=user, recipe=recipe
-            )
-            serializer = UserFavouriteSerializer(
-                userfavourite,
-                data=request.data,
-                partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+
+        userfavourite, created = UserFavourite.objects.get_or_create(
+            user=user, recipe=recipe
+        )
+        if created:
+            serializer = UserFavouriteSerializer(userfavourite)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 

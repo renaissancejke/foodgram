@@ -1,9 +1,10 @@
 import base64
 
 from django.core.files.base import ContentFile
+from django.db.models import Sum, F
 from rest_framework import serializers
 
-from recipes.models import IngredientRecipe, UserShoppingCart
+from recipes.models import IngredientRecipe
 
 
 class Base64ImageField(serializers.ImageField):
@@ -17,20 +18,19 @@ class Base64ImageField(serializers.ImageField):
 
 
 def get_ingridients_in_shop_cart(user):
-    ingredient_details = {}
-    recipe_ids = UserShoppingCart.objects.filter(
-        user=user).values_list('recipe', flat=True)
-    recipe_ingredients = IngredientRecipe.objects.filter(
-        recipe_id__in=recipe_ids
-    ).select_related('ingredients')
-    for ingredient_recipe in recipe_ingredients:
-        ingredient_name = ingredient_recipe.ingredients.name
-        amount = ingredient_recipe.amount
-        unit = ingredient_recipe.ingredients.measurement_unit
-        if ingredient_name in ingredient_details:
-            ingredient_details[ingredient_name]['amount'] += amount
-        else:
-            ingredient_details[ingredient_name] = {
-                'amount': amount, 'unit': unit
-            }
-    return ingredient_details
+    ingredient_details = (
+        IngredientRecipe.objects.filter(recipe__usershoppingcart__user=user)
+        .values('ingredients__name', 'ingredients__measurement_unit')
+        .annotate(
+            amount=Sum(F('amount')),
+        )
+        .order_by('ingredients__name')
+    )
+
+    return {
+        item['ingredients__name']: {
+            'amount': item['amount'],
+            'unit': item['ingredients__measurement_unit']
+        }
+        for item in ingredient_details
+    }

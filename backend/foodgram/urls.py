@@ -4,13 +4,13 @@ from rest_framework import routers
 
 from recipes.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
                            redirect_from_short_link)
-from users.views import MyUserViewSet, subscribe
+from users.views import UserViewSet, subscribe
 
 router = routers.DefaultRouter()
 router.register('recipes', RecipeViewSet, basename='recipes')
 router.register('ingredients', IngredientViewSet)
 router.register('tags', TagViewSet)
-router.register('users', MyUserViewSet)
+router.register('users', UserViewSet)
 
 
 urlpatterns = [

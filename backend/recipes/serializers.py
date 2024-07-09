@@ -5,7 +5,7 @@ from recipes.models import (Ingredient, IngredientRecipe, Recipe, Tag,
                             TagRecipe, UserFavourite, UserShoppingCart)
 from recipes.utils import Base64ImageField
 from users.models import Subscription
-from users.serializers import MyUserSerializer
+from users.serializers import UserSerializer
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -119,7 +119,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = MyUserSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientRecipeSerializer(
         many=True, source='recipe_ingredient', read_only=True
@@ -171,20 +171,15 @@ class SubscriptionListSerializer(serializers.ModelSerializer):
     recipes_count = serializers.SerializerMethodField()
     avatar = Base64ImageField(source='subscription.avatar', required=False)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        if request:
-            self.recipes_limit = int(request.GET.get('recipes_limit', 3))
-        else:
-            self.recipes_limit = 3
-
     def get_is_subscribed(self, obj):
         return True
 
     def get_recipes(self, obj):
         user = obj.subscription
-        user_recipes = user.recipes.all()[:self.recipes_limit]
+        recipes_limit = int(self.context['request'].GET.get(
+            'recipes_limit', 3
+        ))
+        user_recipes = user.recipes.all()[:recipes_limit]
         serialized_recipes = RecipeSubscriptionSerializer(
             user_recipes, many=True
         )

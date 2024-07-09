@@ -24,7 +24,7 @@ class AvatarSerializer(serializers.ModelSerializer):
         return data
 
 
-class MyUserSerializer(UserSerializer):
+class UserSerializer(UserSerializer):
     avatar = Base64ImageField(required=False)
     is_subscribed = serializers.SerializerMethodField()
 
@@ -46,7 +46,7 @@ class MyUserSerializer(UserSerializer):
                   'last_name', 'avatar', 'is_subscribed')
 
 
-class MyUserCreateSerializer(UserCreateSerializer):
+class UserCreateSerializer(UserCreateSerializer):
 
     def create(self, validated_data):
         user = User(
@@ -71,7 +71,7 @@ class MyUserCreateSerializer(UserCreateSerializer):
                   'last_name', 'password')
 
 
-class MyUserResetPasswordSerializer(
+class UserResetPasswordSerializer(
     CurrentPasswordSerializer, PasswordSerializer
 ):
 

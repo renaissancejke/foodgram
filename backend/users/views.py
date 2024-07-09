@@ -19,7 +19,7 @@ from users.serializers import AvatarSerializer
 User = get_user_model()
 
 
-class MyUserViewSet(UserViewSet):
+class UserViewSet(UserViewSet):
     queryset = User.objects.all()
 
     @action(
