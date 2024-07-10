@@ -144,3 +144,5 @@ LOGGING = {
         'level': 'INFO',
     },
 }
+
+CSV_FILES_DIR = os.path.join(BASE_DIR, 'data')
