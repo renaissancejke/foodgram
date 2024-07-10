@@ -9,7 +9,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.filters import IngredientSearchFilter
+from recipes.filters import IngredientSearchFilter, RecipeFilter
 from recipes.models import (Ingredient, Link, Recipe, Tag, UserFavourite,
                             UserShoppingCart)
 from recipes.permissions import IsOwner
@@ -21,23 +21,15 @@ from recipes.utils import get_ingridients_in_shop_cart
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    ordering = ('-pub_date',)
-    permission_classes = [IsOwner]
-
-    def get_serializer_class(self):
-        if self.action == 'create' or self.action == 'partial_update':
-            return RecipeCreateSerializer
-        return RecipeSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    queryset = Recipe.objects.all()
+    permission_classes = (IsOwner, )
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_queryset(self):
-        tags_slugs = self.request.GET.getlist('tags')
+        queryset = Recipe.objects.all()
         is_favorited = self.request.GET.get('is_favorited')
         is_in_shopping_cart = self.request.GET.get('is_in_shopping_cart')
-        author_id = self.request.GET.get('author')
-        queryset = Recipe.objects.all()
         if self.request.user.is_authenticated and is_favorited:
             queryset = queryset.filter(
                 userfavorites__user=self.request.user
@@ -46,11 +38,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 usershoppingcart__user=self.request.user
             )
-        if tags_slugs:
-            queryset = queryset.filter(tags__slug__in=tags_slugs)
-        if author_id:
-            queryset = queryset.filter(author__id=author_id)
         return queryset.distinct()
+
+    def get_serializer_class(self):
+        if self.action == 'create' or self.action == 'partial_update':
+            return RecipeCreateSerializer
+        return RecipeSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         detail=True,
