@@ -1,9 +1,7 @@
 from django.contrib import admin
-from django.contrib.auth import get_user_model
 
+from recipes.models import User
 from users.models import Subscription
-
-User = get_user_model()
 
 
 class UserAdmin(admin.ModelAdmin):

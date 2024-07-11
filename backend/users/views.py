@@ -1,6 +1,5 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
@@ -12,11 +11,10 @@ from rest_framework.response import Response
 
 from recipes.permissions import IsOwner
 from recipes.serializers import SubscriptionSerializer
+from recipes.models import User
 from users.constants import SUBSCRIPTIONS_PAGE_NUMBER
 from users.models import Subscription
 from users.serializers import AvatarSerializer
-
-User = get_user_model()
 
 
 class UserViewSet(UserViewSet):

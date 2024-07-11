@@ -1,12 +1,10 @@
-from django.contrib.auth import get_user_model
 from djoser.serializers import (CurrentPasswordSerializer, PasswordSerializer,
                                 UserCreateSerializer, UserSerializer)
 from rest_framework import serializers
 
 from drf_extra_fields.fields import Base64ImageField
+from recipes.models import User
 from users.models import Subscription
-
-User = get_user_model()
 
 
 class AvatarSerializer(serializers.ModelSerializer):
